@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<style>
+			.call {
+				width: 100px;
+				height: 100px;
+				background-color: green;
+				display: inline-block;
+				border: solid 1px white;
+				vertical-align: middle;
+				
+				line-height: 100px;
+				font-size: 50px;
+				text-align: center;
+			}
+		</style>
+		
+		<div id="board"></div>
+		
+		<script>
+			//用二维数组表示棋盘
+			let pattern =[
+				[0,0,0],
+				[0,0,0],
+				[0,0,0]
+			]
+			let color = 1;
+			function show(){
+				let board = document.getElementById("board");
+				board.innerHTML = "";
+				//绘制棋盘
+				for (let i = 0; i < 3; i++){
+					for (let j = 0; j < 3; j++){
+						let call = document.createElement("div");
+						call.classList.add("call");
+						call.innerText = 
+						pattern[i][j] == 2 ? " × " :
+						 pattern[i][j] == 1 ? " ⚪ " : "";
+						 //添加点击事件用move函数控制交替落子
+						 call.addEventListener("click", () => move(j, i));
+						board.appendChild(call); 
+					}
+					board.appendChild(document.createElement("br"))
+				}
+			}
+			//用color的值从1到2从2到1交替落子
+			function move(x,y){
+				pattern[y][x] = color;
+				//胜负if逻辑
+				if(check(pattern, color)){
+					alert(color == 2 ? "×赢了" : "⚪赢了");
+				}
+				color = 3 - color;//将此行代码放置到判断胜负if之前则会在下一个落子之后才会显示胜负
+				show();
+				//提示某一方要赢了
+				if(willWin(pattern, color)){
+					console.log(color == 2 ? "×赢了!" : "⚪赢了!");
+				}
+			}
+			//判断哪一方赢了
+			function check(){
+				//判断横着是否有一方赢了
+				for(let i = 0; i < 3; i++){
+					let win = true;
+					for(let j = 0; j < 3; j++){
+						if(pattern[i][j] !== color){
+							win = false;
+						}
+					}
+					if(win){
+						return true;
+					}
+				}
+				//判断竖着是否有一方赢了
+				for(let i = 0; i < 3; i++){
+					let win = true;
+					for(let j = 0; j < 3; j++){
+						if(pattern[j][i] !== color){
+							win = false;
+						}
+					}
+					if(win){
+						return true;
+					}
+				}
+				//判断斜向有没有胜利方
+				//此处下面花括号为了可以对win反复赋值
+				{
+					let win = true;
+					for(let j = 0; j < 3; j++){
+						if(pattern[j][2-j] !== color){
+							win = false;
+						}
+					}
+					if(win)
+						return true;
+				}
+				{
+					let win = true;
+					for(let j = 0; j < 3; j++){
+						if(pattern[j][j] !== color){
+							win = false;
+						}
+					}
+					if(win)
+						return true;
+				}
+				return false;
+			}
+			//克隆一个新的棋盘出来
+			function clone(pattern){
+				return JSON.parse(JSON.stringify(pattern));
+			}
+			//判断每个位置是否为空，空看是否与下一子是否相同，相同说明该子赢了，不空跳过。
+			function willWin(pattern, color){
+				for(let i = 0; i < 3; i++){
+					for(let j = 0; j < 3; j++){
+						if(pattern[i][j]){
+						    continue;
+							}
+					    let tmp = clone(pattern);
+						tmp[i][j] = color;
+						if(check(tmp, color)){
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+			show(pattern);
+		</script>
+	</body>
+</html>
