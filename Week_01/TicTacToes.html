@@ -25,11 +25,11 @@
 		<script>
 			//用二维数组表示棋盘
 			let pattern =[
-				[0,0,0],
-				[0,0,0],
-				[0,0,0]
+				0,0,0,
+				0,1,0,
+				0,0,0
 			]
-			let color = 1;
+			let color = 2;
 			function show(){
 				let board = document.getElementById("board");
 				board.innerHTML = "";
@@ -39,8 +39,8 @@
 						let call = document.createElement("div");
 						call.classList.add("call");
 						call.innerText = 
-						pattern[i][j] == 2 ? " × " :
-						 pattern[i][j] == 1 ? " ⚪ " : "";
+						pattern[i * 3 + j] == 2 ? " × " :
+						 pattern[i * 3 + j] == 1 ? " ⚪ " : "";
 						 //添加点击事件用move函数控制交替落子
 						 call.addEventListener("click", () => userMove(j, i));
 						board.appendChild(call); 
@@ -50,25 +50,26 @@
 			}
 			//用color的值从1到2从2到1交替落子
 			function userMove(x,y){
-				pattern[y][x] = color;
+				pattern[y * 3 + x] = color;
 				//胜负if逻辑
 				if(check(pattern, color)){
-				    alert(color == 2 ? "×赢了" : "⚪赢了");
+					alert(color == 2 ? "×赢了" : "⚪赢了");
 				}
 				color = 3 - color;//将此行代码放置到判断胜负if之前则会在下一个落子之后才会显示胜负
+				
 				console.log(bestChoice(pattern, color));
 				show();
-				//computerMove();
+				computerMove();
 				//提示某一方要赢了
 				//if(willWin(pattern, color)){
 				//	console.log(color == 2 ? "×赢了!" : "⚪赢了!");
 				//}
 			}
-			//给人机找个最好的点落子
+			//给人机找到一个最好的点落子
 			function computerMove(){
 				let choice = bestChoice(pattern, color);
 				if(choice.point)
-				pattern[choice.col] = color;
+				pattern[choice.point[1] * 3 + choice.point[0]] = color;
 				if(check(pattern, color)){
 					alert(color == 2 ? "×赢了" : "⚪赢了");
 				}
@@ -81,7 +82,7 @@
 				for(let i = 0; i < 3; i++){
 					let win = true;
 					for(let j = 0; j < 3; j++){
-						if(pattern[i][j] !== color){
+						if(pattern[i * 3 + j] !== color){
 							win = false;
 						}
 					}
@@ -93,7 +94,7 @@
 				for(let i = 0; i < 3; i++){
 					let win = true;
 					for(let j = 0; j < 3; j++){
-						if(pattern[j][i] !== color){
+						if(pattern[j * 3 + i] !== color){
 							win = false;
 						}
 					}
@@ -106,7 +107,7 @@
 				{
 					let win = true;
 					for(let j = 0; j < 3; j++){
-						if(pattern[j][2-j] !== color){
+						if(pattern[j * 3 + 2 - j] !== color){
 							win = false;
 						}
 					}
@@ -116,7 +117,7 @@
 				{
 					let win = true;
 					for(let j = 0; j < 3; j++){
-						if(pattern[j][j] !== color){
+						if(pattern[j * 3 + j] !== color){
 							win = false;
 						}
 					}
@@ -127,16 +128,17 @@
 			}
 			//克隆一个新的棋盘出来
 			function clone(pattern){
-				return JSON.parse(JSON.stringify(pattern));
+				//利用Java的原型机制复制的数组继承了原先的数组的方法也继承原先数组的数据
+				return Object.create(pattern);
 			}
 			//判断每个位置是否为空，空看是否与下一子是否相同，相同说明该子赢了，不空跳过。
 			function willWin(pattern, color){
 				for(let i = 0; i < 3; i++){
 					for(let j = 0; j < 3; j++){
-						if(pattern[i][j])
+						if(pattern[i * 3 + j] !== 0)
 						    continue;
 					    let tmp = clone(pattern);
-						tmp[i][j] = color;
+						tmp[i * 3 + j] = color;
 						if(check(tmp, color)){
 							return [j, i];
 						}
@@ -146,34 +148,31 @@
 			}
 			//找到留给对方最差的点的函数过程
 			function bestChoice(pattern, color){
-				let p;
-				let col;
-				if(p = willWin(pattern, color)){
+				let point = willWin(pattern, color);
+				if(point){
 					return {
-						point: p,
-						result: 1,
-						col: col
+						point: point,
+						result: 1
 					}
 				}
-				let result = -2;//表示我们会输还是赢，输-1，赢1，平局0，初始值置为-2
-				let point = null;
+				let result = -1;//表示我们会输还是赢，输-1，赢1，平局0，初始值置为-2
 				outer:for(let i = 0; i < 3; i++){
 					for(let j = 0; j < 3; j++){
-						if(pattern[i][j])
+						if(pattern[i * 3 + j] !== 0)
 						continue;
-						let tmp = clone(pattern);
-						tmp[i][j] = color;
+						let tmp = clone(pattern)
+						//let tmp = clone(pattern)
+						tmp[i * 3 + j] = color;
 						//下面递归会一层层调用
-						let r = bestChoice(tmp, 3-color).result;
+						let opp = bestChoice(tmp, 3-color)
 						//找到对于对方最好的点并存储到point中
-						if(- r > result){
-							result = - r;
+						if( -opp.result >= result){
 							point = [j, i];
-							col = 1;
+							result = - opp.result;
 						}
-						if(result == 1){
+						//判断是否一定能赢，是就胜负剪枝不在搜索
+						if(result == 1)
 							break outer;
-						}
 					}
 				}
 				return {
@@ -182,7 +181,6 @@
 				}
 			}
 			show(pattern);
-			
 		</script>
 	</body>
 </html>
