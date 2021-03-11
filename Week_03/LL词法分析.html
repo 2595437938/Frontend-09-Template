@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<script>
+			var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g  //定义正则表达式来匹配字符
+			var dictionary = ["Number", "Whitespace", "LineTerminator", "*","/","+","-"];  //表示四种不同的字符情况
+			
+			function* tokenize(source){
+				var result = null;
+				var lastIndex = 0;
+				while(true) {
+					lastIndex = regexp.lastIndex;
+					result = regexp.exec(source);
+					if(!result) //没匹配出来就break
+						break;
+					if(regexp.lastIndex - lastIndex > result[0].length) //此处长度不一样说明有不认识的字符也break
+						break;
+					//定义token变量来储存当前被识别出来的字符类型跟值
+					let token = {
+						type: null,
+						value: null
+					}
+					for(var i = 0; i <= dictionary.length; i++){
+						if(result[i])
+						token.type = dictionary[i - 1];//匹配出来的类型
+					}
+					token.value = result[0];//匹配出来类型的值
+					yield token;//yield新特性，返回一个序列
+				}
+				yield {
+					type: "EOF"
+				}
+			}
+			//使用for of 来循环对字符串处理
+			for(let token of tokenize("1024 + 10 * 25")){
+				console.log(token);
+			}
+		</script>
+	</body>
+</html>

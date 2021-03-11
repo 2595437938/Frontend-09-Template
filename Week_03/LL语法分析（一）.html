@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<script>
+			var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g  //定义正则表达式来匹配字符
+			var dictionary = ["Number", "Whitespace", "LineTerminator", "*","/","+","-"];  //表示四种不同的字符情况
+			
+			function* tokenize(source){
+				var result = null;
+				var lastIndex = 0;
+				while(true) {
+					lastIndex = regexp.lastIndex;
+					result = regexp.exec(source);
+					if(!result) //没匹配出来就break
+						break;
+					if(regexp.lastIndex - lastIndex > result[0].length) //此处长度不一样说明有不认识的字符也break
+						break;
+					//定义token变量来储存当前被识别出来的字符类型跟值
+					let token = {
+						type: null,
+						value: null
+					}
+					for(var i = 0; i <= dictionary.length; i++){
+						if(result[i])
+						token.type = dictionary[i - 1];
+					}
+					token.value = result[0];
+					yield token;
+				}
+				yield {
+					type: "EOF"
+				};
+			}
+			
+			let source = [];
+			
+			for(let token of tokenize("10 * 25 / 2")){
+				//console.log(token);
+				if(token.type !== "Whitespace" && token.type !== "LineTerminator")
+				source.push(token);
+			}
+			
+			
+			
+			function Expression(tokens){
+				
+			}
+			
+			function AdditiveExpression(source){
+				
+			}
+			
+			function MultiplicativeExpression(source){
+				//console.log(source);
+				//如果第一个是数字类型就给一个MultiplicativeExpression
+				if(source[0].type === "Number") {
+					let node = {
+						type: "MultiplicativeExpression",
+						children: [source[0]]
+					}
+					source[0] = node;
+					return MultiplicativeExpression(source);
+				}
+				//处理乘法
+				if(source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "*") {
+					let node = {
+						type: "MultiplicativeExpression",
+						operator: "*",
+						children: []
+					}
+					node.children.push(source.shift());
+					node.children.push(source.shift());
+					node.children.push(source.shift());
+					source.unshift(node);
+					return MultiplicativeExpression(source);
+				}
+				//处理除法
+				if(source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "/") {
+					let node = {
+						type: "MultiplicativeExpression",
+						operator: "/",
+						children: []
+					}
+					node.children.push(source.shift());
+					node.children.push(source.shift());
+					node.children.push(source.shift());
+					source.unshift(node);
+					return MultiplicativeExpression(source);
+				}
+				//此处说明字符串被处理完成，则返回当前数组的第一个词
+				if(source[0].type === "MultiplicativeExpression")
+					return source[0];
+					
+				return MultiplicativeExpression(source);//原则来说这句代码不会被执行
+			}
+			
+			console.log(MultiplicativeExpression(source));
+		</script>
+	</body>
+</html>
