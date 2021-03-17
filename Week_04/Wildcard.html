@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		
+		
+		
+	</body>
+	<script>
+		function find(source, pattern){
+			let starCount = 0;//代表有几个星号
+			//循环找出有几个星号
+			for(let i = 0; i <pattern.length; i++){
+				if(pattern[i] === "*")
+					starCount ++;
+			}
+			//没有星号的情况就是一个严格匹配
+			if(starCount === 0){
+				for(let i = 0; i < pattern.length; i++){
+					if(pattern[i] !== source[i] && pattern[i] !== "?")
+						return false;
+				}
+				return;
+			}
+			//
+			let i = 0;//代表pattern的位置
+			let lastIndex = 0;//代表source的位置
+			
+			//匹配第一个星号之前的字符
+			for(i = 0; pattern[i] !== "*"; i++){
+				if(pattern[i] !== source[i] && pattern[i] !== "?"){
+					return false;
+				}
+			}
+			lastIndex = i;//将lastIndex的位置置为第一个星号之后的位置接招查找
+			//从0到starCount-1的循环每一段每个星号
+			for(let p = 0; p < starCount - 1; p++){
+				i++;
+				let subPattern = "";//星号后边的格式
+				while(pattern[i] !== "*"){
+					subPattern += pattern[i];
+					i++;
+				}
+				//将subPattern中的 ？格式替换成正则语法
+				let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g");// \\s\\S 代表任意字符
+				reg.lastIndex = lastIndex;//将正则的lastIndex替换，可以接着查找
+				
+				console.log(reg.exec(source));
+				//有没匹配到的直接return false
+				if(!reg.exec(source))
+					return false;
+				
+				lastIndex = reg.lastIndex;
+			}
+				//尾部匹配
+				for(let j = 0; j <= source.length - lastIndex && pattern[pattern.length - j] !== "*"; j++){
+					if(pattern[pattern.length - j] !== source[source.length - j] && pattern[pattern.length - j] !== "?"){
+						return false;
+					}
+				}
+				return true;
+		}
+	</script>
+</html>
