@@ -1,0 +1,25 @@
+<div id="dragable" style="width: 100px;height: 100px;background-color: pink;"></div>
+<script>
+    let dragable = document.getElementById("dragable");
+    let baseX = 0, baseY = 0;
+    //在按下的时候来监听
+    dragable.addEventListener("mousedown", function (event) {
+        let startX = event.clientX, startY = event.clientY;//鼠标的起始点
+        let up = event => {
+            baseX = baseX + event.clientX - startX;
+            baseY = baseY + event.clientY - startY;
+            //松开的时候移除mouse down和mouseup
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", up);
+        };
+        let move = event => {
+            //console.log(event);
+            dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`;
+        }
+        //在document中监听不然会断触
+        //给按下状态添加移动和松开事件
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", up);
+    })
+
+</script>

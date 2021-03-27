@@ -1,0 +1,14 @@
+<script>
+    //设置一个对象
+    let object = {
+        a: 1,
+        b: 2
+    }
+    //创建一个Proxy来代理object
+    let po = new Proxy(object, {
+        set(obj, prop, val) {
+            console.log(obj, prop, val);
+        }
+    })
+
+</script>

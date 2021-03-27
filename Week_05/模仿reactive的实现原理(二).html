@@ -1,0 +1,36 @@
+<script>
+    let callbacks = [];//effect存储到数组里
+    let object = {
+        a: 1,
+        b: 2
+    }
+
+    let po = reactive(object);
+    //effect 一个回调函数当作变量传进去
+    effect(() => {
+        console.log(po.a);
+    })
+
+    function effect(callback) {
+        callbacks.push(callback);//这里存进去的是一个个函数
+    }
+
+    function reactive(object) {
+        return new Proxy(object, {
+            set(obj, prop, val) {
+                obj[prop] = val;
+                //遍历callbacks
+                for (let callback of callbacks) {
+                    callback();//调用callbacks中的函数
+                }
+                return obj[prop];
+            },
+            get(obj, prop) {
+                console.log(obj, prop);
+                return obj[prop];
+            }
+        })
+
+    }
+
+</script>
